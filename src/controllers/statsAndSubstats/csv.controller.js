@@ -4,16 +4,6 @@ const StatsAndSubstats = db.statsAndSubstatss;
 const fs = require("fs");
 const csv = require("fast-csv");
 
-// const teste = {
-//   colect: '25/10/1988',
-//   geography: 'Poa',
-//   status_name_id: '35',
-//   status_name: 'asdasdasd',
-//   substatus_name_id: '5',
-//   substatus_name: 'fgfgfgfg',
-//   records: 44
-// }
-
 const upload = async (req, res) => {
   try {
     if (req.file == undefined) {
@@ -21,7 +11,8 @@ const upload = async (req, res) => {
     }
 
     let statsAndSubstatss = [];
-    let path = __basedir + "/resources/static/assets/uploads/" + req.file.filename;
+    let path =
+      __basedir + "/resources/static/assets/uploads/" + req.file.filename;
 
     fs.createReadStream(path)
       .pipe(csv.parse({ headers: true }))
@@ -30,12 +21,13 @@ const upload = async (req, res) => {
       })
       .on("data", (row) => {
         const newRow = rowTreatment(row);
+        
+
+
         statsAndSubstatss.push(newRow);
-        //console.log(`aqui os dados: ${Object.values(row)}`)
       })
       .on("end", () => {
-        console.log(statsAndSubstatss)
-        StatsAndSubstats.bulkCreate(statsAndSubstatss, {returning: true})
+        StatsAndSubstats.bulkCreate(statsAndSubstatss, { returning: true })
           .then(() => {
             res.status(200).send({
               message:
@@ -58,7 +50,7 @@ const upload = async (req, res) => {
 };
 
 const getStatsAndSubstatss = (req, res) => {
-    StatsAndSubstats.findAll()
+  StatsAndSubstats.findAll()
     .then((data) => {
       res.send(data);
     })
@@ -71,18 +63,22 @@ const getStatsAndSubstatss = (req, res) => {
 };
 
 function rowTreatment(row) {
-  const geographValue = Object.values(row)[0].substring(0, Object.values(row)[0].indexOf(';'))
-  const status_nameValue = Object.values(row)[0].substring(Object.values(row)[0].indexOf(';') + 1, Object.values(row)[0].length)
+  const rowValues = Object.values(row)[0].split(';')
 
   const newRow = {
-    geography: geographValue,
-    status_name: status_nameValue
-  }
+    collect: rowValues[0],
+    geography: rowValues[1],
+    status_name_id: rowValues[2],
+    status_name: rowValues[3],
+    substatus_name_id: rowValues[4],
+    substatus_name: rowValues[5],
+    records: rowValues[6]
+  };
 
-  return newRow
+  return newRow;
 }
 
 module.exports = {
   upload,
-  getStatsAndSubstatss
+  getStatsAndSubstatss,
 };
