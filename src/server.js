@@ -8,10 +8,10 @@ global.__basedir = __dirname + "/..";
 app.use(express.urlencoded({ extended: true }));
 initRoutes(app);
 
-//db.sequelize.sync();
-db.sequelize.sync({ force: true }).then(() => {
-  console.log("Drop and re-sync db.");
-});
+db.sequelize.sync();
+// db.sequelize.sync({ force: true }).then(() => {
+//   console.log("Drop and re-sync db.");
+// });
 
 let port = 8080;
 app.listen(port, () => {
