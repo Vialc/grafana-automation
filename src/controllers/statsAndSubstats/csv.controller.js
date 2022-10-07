@@ -1,8 +1,26 @@
 const db = require("../../models");
 const StatsAndSubstats = db.statsAndSubstatss;
+const axios = require("axios");
 
 const fs = require("fs");
 const csv = require("fast-csv");
+const { Server } = require("tls");
+
+const instance = axios.create({
+  baseURL:
+    "https://cadastro-unificado-apigw.prd.naturacloud.com/global-people-management/v1/people/",
+  headers: {
+    "x-api-key": "8fe6d583-a19b-4da1-8fb2-c80f2d651a3d",
+    function: 1,
+    role: 1,
+    businessmodel: 1,
+    tenantid: "8374a616-8b1e-46af-8d41-2bcf683234db",
+    sourcesystem: 1,
+    country: 'AR',
+    companyid: 1,
+    countryid: 2,
+  },
+});
 
 const upload = async (req, res) => {
   try {
@@ -21,38 +39,18 @@ const upload = async (req, res) => {
       })
       .on("data", (row) => {
         const newRow = rowTreatment(row);
-        
+
         statsAndSubstatss.push(newRow);
       })
       .on("end", () => {
         //StatsAndSubstats.bulkCreate(statsAndSubstatss, { returning: true })
-        statsAndSubstatss.map((row, index) => {
-          async function executePosts() {
-            const res = await fetch(`https://cadastro-unificado-apigw.prd.naturacloud.com/global-people-management/v1/people/${row.person_id}/person-role/${row.person_roles_id}/cease%27`, {
-              Method: 'PATCH',
-              Headers: {
-                'x-api-key': '8fe6d583-a19b-4da1-8fb2-c80f2d651a3d', 
-                function: 1,
-                role: 1,
-                businessmodel: 1,
-                tenantid: '8374a616-8b1e-46af-8d41-2bcf683234db',
-                sourcesystem: 1,
-                country: AR,
-                companyid: 1,
-                countryid: 2,
-              }
-            })
-            
-          }
-          //console.log(res.status.value)
-        })        
-
-        console.log('posts feitos')
-          .then(() => {
+        
+        executePath(statsAndSubstatss).then(() => {
             res.status(200).send({
               message:
                 "Uploaded the file successfully: " + req.file.originalname,
             });
+            return console.log('segundo then')
           })
           .catch((error) => {
             res.status(500).send({
@@ -83,7 +81,7 @@ const getStatsAndSubstatss = (req, res) => {
 };
 
 function rowTreatment(row) {
-  const rowValues = Object.values(row)[0].split(';')
+  const rowValues = Object.values(row)[0].split(";");
 
   // const newRow = {
   //   collect: rowValues[0],
@@ -99,10 +97,26 @@ function rowTreatment(row) {
     candidate_id: rowValues[0],
     person_id: rowValues[1],
     tenant_id: rowValues[2],
-    person_roles_id: rowValues[3]
-  }
+    person_roles_id: rowValues[3],
+  };
 
   return newRow;
+}
+
+async function executePath(arrayDeRows) {
+  await arrayDeRows.map((row, index) => {
+    console.log('entrou no map')
+    executePosts(row)//.then((res) => console.log(res))
+})
+}
+
+async function executePosts(row) {
+  const pathReq = async () => await instance.patch(
+    `${row.person_id}/person-role/${row.person_roles_id}/cease%27`,
+  ).then((res) => {
+    console.log('pegando o res')
+  })
+  pathReq()
 }
 
 module.exports = {
