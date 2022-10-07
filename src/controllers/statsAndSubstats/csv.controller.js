@@ -1,5 +1,5 @@
-const db = require("../../models");
-const StatsAndSubstats = db.statsAndSubstatss;
+//const db = require("../../models");
+//const StatsAndSubstats = db.statsAndSubstatss;
 const axios = require("axios");
 
 const fs = require("fs");
@@ -50,7 +50,6 @@ const upload = async (req, res) => {
               message:
                 "Uploaded the file successfully: " + req.file.originalname,
             });
-            return console.log('segundo then')
           })
           .catch((error) => {
             res.status(500).send({
@@ -111,12 +110,21 @@ async function executePath(arrayDeRows) {
 }
 
 async function executePosts(row) {
-  const pathReq = async () => await instance.patch(
-    `${row.person_id}/person-role/${row.person_roles_id}/cease%27`,
-  ).then((res) => {
-    console.log('pegando o res')
-  })
-  pathReq()
+  
+    const pathReq = async () => {
+      try {
+        await instance.patch(
+          `${row.person_id}/person-role/${row.person_roles_id}/cease%27`,
+        ).then((res) => {
+          console.log('pegando o res')
+        })
+      } catch (error) {
+        console.log(error)
+      }
+      
+      }
+      pathReq()
+  
 }
 
 module.exports = {
